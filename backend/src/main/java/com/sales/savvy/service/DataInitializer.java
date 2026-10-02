@@ -74,18 +74,18 @@ public class DataInitializer implements CommandLineRunner {
     private void seedCategoriesAndProducts() {
         // Ensure all categories from the Category Header (Image 1) exist
         Category fashion = getOrCreateCategory("Fashion");
-        Category mobiles = getOrCreateCategory("Mobiles");
         Category electronics = getOrCreateCategory("Electronics");
-        Category beauty = getOrCreateCategory("Beauty");
-        Category home = getOrCreateCategory("Home");
-        Category appliances = getOrCreateCategory("Appliances");
-        Category toysBaby = getOrCreateCategory("Toys, baby");
-        Category foodHealth = getOrCreateCategory("Food & Health");
-        Category autoAcc = getOrCreateCategory("Auto Accessories");
-        Category sportsFitness = getOrCreateCategory("Sports & Fitness");
-        Category furniture = getOrCreateCategory("Furniture");
-        Category books = getOrCreateCategory("Books");
-        Category twoWheelers = getOrCreateCategory("2 Wheelers");
+        getOrCreateCategory("Mobiles");
+        getOrCreateCategory("Beauty");
+        getOrCreateCategory("Home");
+        getOrCreateCategory("Appliances");
+        getOrCreateCategory("Toys, baby");
+        getOrCreateCategory("Food & Health");
+        getOrCreateCategory("Auto Accessories");
+        getOrCreateCategory("Sports & Fitness");
+        getOrCreateCategory("Furniture");
+        getOrCreateCategory("Books");
+        getOrCreateCategory("2 Wheelers");
 
         // If product count is below 40, seed genuine products for Fashion & Electronics
         if (productRepository.count() < 40) {

@@ -3,7 +3,7 @@
  * Targets: 100 concurrent requests, response time < 2000 ms
  */
 
-const http = require('http');
+import http from 'http';
 
 async function makeRequest(url) {
   const start = Date.now();
