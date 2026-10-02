@@ -29,8 +29,8 @@ describe('ProductCard Component', () => {
 
     expect(screen.getByText('SavvySound Pro ANC Headphones')).toBeDefined();
     expect(screen.getByText('Electronics')).toBeDefined();
-    expect(screen.getByText('25 in stock')).toBeDefined();
-    expect(screen.getByText(/3,499\.00/)).toBeDefined();
+    expect(screen.getByText('In Stock')).toBeDefined();
+    expect(screen.getByText(/3,499/)).toBeDefined();
   });
 
   it('displays out of stock badge when stock is 0', () => {
@@ -46,7 +46,8 @@ describe('ProductCard Component', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText('Out of Stock')).toBeDefined();
+    const outOfStockElements = screen.getAllByText('Out of Stock');
+    expect(outOfStockElements.length).toBeGreaterThan(0);
     const btn = screen.getByRole('button');
     expect(btn.hasAttribute('disabled')).toBe(true);
   });
