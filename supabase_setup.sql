@@ -1,10 +1,13 @@
 -- =============================================================================
--- SALES SAVVY - COMPLETE SUPABASE SETUP SCRIPT (SCHEMA + SEED DATA + RLS)
--- Run this whole script inside the Supabase SQL Editor:
--- https://supabase.com/dashboard/project/_/sql
+-- SALES SAVVY - COMPLETE SUPABASE SETUP SCRIPT (SCHEMA + SEED DATA + RLS + GRANTS)
+-- Adheres to official Supabase & Postgres Best Practices
+--
+-- How to run:
+-- 1. Open Supabase Dashboard -> SQL Editor (https://supabase.com/dashboard/project/_/sql)
+-- 2. Paste this entire script and click "Run" (or Ctrl + Enter)
 -- =============================================================================
 
--- Enable UUID extension
+-- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 1. DROP EXISTING CONFLICTING TABLES IF ANY (Clean Setup)
@@ -67,7 +70,22 @@ CREATE TABLE order_items (
     price NUMERIC(12, 2) NOT NULL
 );
 
--- 3. ENABLE ROW LEVEL SECURITY (RLS)
+-- 3. FOREIGN KEY & QUERY PERFORMANCE INDEXES
+CREATE INDEX IF NOT EXISTS idx_products_category_id ON products(category_id);
+CREATE INDEX IF NOT EXISTS idx_products_sub_category ON products(sub_category);
+CREATE INDEX IF NOT EXISTS idx_product_images_product_id ON product_images(product_id);
+CREATE INDEX IF NOT EXISTS idx_cart_items_user_id ON cart_items(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
+
+-- 4. GRANT SCHEMA & DATA API ACCESS TO POSTGREST ROLES
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated;
+
+-- 5. ENABLE ROW LEVEL SECURITY (RLS)
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE product_images ENABLE ROW LEVEL SECURITY;
@@ -75,17 +93,32 @@ ALTER TABLE cart_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 
--- 4. CREATE RLS POLICIES (Public read for ecommerce browsing)
-CREATE POLICY "Public categories are viewable by everyone" ON categories FOR SELECT USING (true);
-CREATE POLICY "Public products are viewable by everyone" ON products FOR SELECT USING (true);
-CREATE POLICY "Public product images are viewable by everyone" ON product_images FOR SELECT USING (true);
-CREATE POLICY "Users can manage their own cart items" ON cart_items FOR ALL USING (true);
-CREATE POLICY "Users can view their own orders" ON orders FOR SELECT USING (true);
-CREATE POLICY "Users can insert their own orders" ON orders FOR INSERT WITH CHECK (true);
-CREATE POLICY "Users can view their order items" ON order_items FOR SELECT USING (true);
-CREATE POLICY "Users can insert order items" ON order_items FOR INSERT WITH CHECK (true);
+-- 6. OPTIMIZED RLS POLICIES
+CREATE POLICY "Public categories are viewable by everyone" ON categories
+    FOR SELECT TO anon, authenticated USING (true);
 
--- 5. SEED ALL CATEGORIES
+CREATE POLICY "Public products are viewable by everyone" ON products
+    FOR SELECT TO anon, authenticated USING (true);
+
+CREATE POLICY "Public product images are viewable by everyone" ON product_images
+    FOR SELECT TO anon, authenticated USING (true);
+
+CREATE POLICY "Users can manage cart items" ON cart_items
+    FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+
+CREATE POLICY "Users can view orders" ON orders
+    FOR SELECT TO anon, authenticated USING (true);
+
+CREATE POLICY "Users can insert orders" ON orders
+    FOR INSERT TO anon, authenticated WITH CHECK (true);
+
+CREATE POLICY "Users can view order items" ON order_items
+    FOR SELECT TO anon, authenticated USING (true);
+
+CREATE POLICY "Users can insert order items" ON order_items
+    FOR INSERT TO anon, authenticated WITH CHECK (true);
+
+-- 7. SEED ALL CATEGORIES
 INSERT INTO categories (category_id, category_name) VALUES
     (1, 'Fashion'),
     (2, 'Mobiles'),
@@ -99,9 +132,10 @@ INSERT INTO categories (category_id, category_name) VALUES
     (10, 'Sports & Fitness'),
     (11, 'Furniture'),
     (12, 'Books'),
-    (13, '2 Wheelers');
+    (13, '2 Wheelers')
+ON CONFLICT (category_name) DO NOTHING;
 
--- 6. SEED ELECTRONICS / TECHNOLOGY PRODUCTS
+-- 8. SEED ELECTRONICS / TECHNOLOGY PRODUCTS
 INSERT INTO products (product_id, product_name, description, price, stock_quantity, sub_category, category_id) VALUES
     (1, 'Apple MacBook Air M2 (13.6-inch, 8GB RAM, 256GB SSD, Midnight)', 'Apple M2 chip with 8-core CPU and 8-core GPU. 13.6-inch Liquid Retina display with True Tone. 8GB unified memory, 256GB superfast SSD storage. Backlit Magic Keyboard with Touch ID, 1080p FaceTime HD camera, MagSafe 3 charging port.', 89990.00, 15, 'Laptops', 3),
     (2, 'ASUS TUF Gaming A15 AMD Ryzen 7 7735HS Gaming Laptop', '15.6-inch FHD (1920 x 1080) 144Hz IPS-level anti-glare display. AMD Ryzen 7 7735HS Processor with NVIDIA GeForce RTX 3050 4GB GDDR6 graphics. 16GB DDR5 RAM, 512GB PCIe 4.0 NVMe SSD, RGB Backlit Keyboard, Windows 11 Home.', 69990.00, 20, 'Laptops', 3),
@@ -123,9 +157,10 @@ INSERT INTO products (product_id, product_name, description, price, stock_quanti
     (18, 'Logitech MX Master 3S Wireless Performance Ergonomic Mouse', 'Quiet Clicks with 90% less noise. 8K DPI any-surface tracking, MagSpeed electromagnetic scrolling wheels capable of 1,000 lines per second. USB-C rechargeable, pairs up to 3 computers across Windows and macOS.', 8995.00, 20, 'ITPeripherals', 3),
     (19, 'Anker 67W GaN 3-Port Fast Charger (2 USB-C + 1 USB-A)', 'GaNPrime intelligent power allocation technology. Fast charge MacBook Air, iPhone, and iPad simultaneously. 51% smaller than original 67W charger, ActiveShield 2.0 safety temperature monitoring system.', 3499.00, 40, 'Chargers & Cables', 3),
     (20, 'Apple iPhone 15 (128 GB) - Black', 'Dynamic Island bubbles up alerts and Live Activities. 48MP Main camera with 2x Telephoto. Durable color-infused glass and aluminum design. A16 Bionic chip, USB-C charging with all-day battery life.', 69999.00, 15, 'Tech drop', 2),
-    (21, 'Samsung Galaxy S24 Ultra 5G (Titanium Gray, 256GB)', 'Galaxy AI features Circle to Search, Live Translate, and Photo Assist. 200MP camera system with 5x optical zoom, Snapdragon 8 Gen 3 for Galaxy, 6.8-inch Dynamic AMOLED 2X flat display with Corning Gorilla Armor.', 129999.00, 10, 'Tech drop', 2);
+    (21, 'Samsung Galaxy S24 Ultra 5G (Titanium Gray, 256GB)', 'Galaxy AI features Circle to Search, Live Translate, and Photo Assist. 200MP camera system with 5x optical zoom, Snapdragon 8 Gen 3 for Galaxy, 6.8-inch Dynamic AMOLED 2X flat display with Corning Gorilla Armor.', 129999.00, 10, 'Tech drop', 2)
+ON CONFLICT (product_id) DO NOTHING;
 
--- 7. SEED FASHION PRODUCTS
+-- 9. SEED FASHION PRODUCTS
 INSERT INTO products (product_id, product_name, description, price, stock_quantity, sub_category, category_id) VALUES
     (22, 'Biba Women Cotton Straight Printed Kurta Set with Palazzo & Dupatta', 'Pure cotton ethnic kurta set featuring intricate floral block print, round neck with notch, three-quarter sleeves, matched with straight cotton palazzos and a lightweight chiffon bordered dupatta.', 2499.00, 40, 'Kurta sets', 1),
     (23, 'Libas Women Ethnic Embroidered Rayon Anarkali Kurta Set', 'Flared Anarkali kurta crafted from premium soft rayon with delicate zari work on the yoke, paired with comfortable churidar pants and gold-foiled dupatta. Ideal for festive gatherings and ceremonies.', 1799.00, 35, 'Kurta sets', 1),
@@ -146,9 +181,10 @@ INSERT INTO products (product_id, product_name, description, price, stock_quanti
     (38, 'Levi''s Men''s 511 Mid Rise Slim Fit Stretchable Denim Jeans', 'Classic 5-pocket styling in medium indigo wash with whiskering details. Slim from hip to ankle with built-in stretch elastane for all-day mobility and shape retention.', 2399.00, 50, 'Jeans', 1),
     (39, 'American Tourister 79cm Polypropylene Hard-Sided 8-Wheel Trolley', 'Impact-resistant polypropylene hard shell with textured scratch-resistant finish. Smooth dual 360-degree spinner wheels, integrated TSA 3-digit combination lock, expandable packing volume.', 4499.00, 20, 'Trolley bags', 1),
     (40, 'Ray-Ban Aviator Classic Polarized Metal Frame Sunglasses', 'Iconic teardrop aviator gold metal frame with polarized G-15 crystal green lenses. 100% UV400 radiation protection, eliminates glare, adjustable clear silicone nose pads.', 7490.00, 15, 'Sunglasses', 1),
-    (41, 'Zara Inspired Women Wide-Leg High-Rise Denim Cargo Pants', 'High-waisted wide-leg cut in washed light blue denim. Side utilitarian bellows cargo pockets with flap closures, belt loops, and clean raw hem.', 1999.00, 35, 'Jeans, Cargo', 1);
+    (41, 'Zara Inspired Women Wide-Leg High-Rise Denim Cargo Pants', 'High-waisted wide-leg cut in washed light blue denim. Side utilitarian bellows cargo pockets with flap closures, belt loops, and clean raw hem.', 1999.00, 35, 'Jeans, Cargo', 1)
+ON CONFLICT (product_id) DO NOTHING;
 
--- 8. SEED PRODUCT IMAGES
+-- 10. SEED PRODUCT IMAGES
 INSERT INTO product_images (product_id, image_url) VALUES
     (1, 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800&auto=format&fit=crop&q=80'),
     (2, 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800&auto=format&fit=crop&q=80'),
@@ -192,7 +228,7 @@ INSERT INTO product_images (product_id, image_url) VALUES
     (40, 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80'),
     (41, 'https://images.unsplash.com/photo-1582552938357-32b906df40cb?w=800&auto=format&fit=crop&q=80');
 
--- 9. RESET SEQUENCES
+-- 11. RESET SEQUENCES TO HIGHEST IDS
 SELECT setval('categories_category_id_seq', (SELECT MAX(category_id) FROM categories));
 SELECT setval('products_product_id_seq', (SELECT MAX(product_id) FROM products));
 SELECT setval('product_images_image_id_seq', (SELECT MAX(image_id) FROM product_images));
