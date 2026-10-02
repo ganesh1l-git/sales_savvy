@@ -1,7 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Vercel auto-injects SUPABASE_URL / NEXT_PUBLIC_SUPABASE_URL
-// Custom Vite envs use VITE_SUPABASE_URL
 const supabaseUrl =
   import.meta.env.VITE_SUPABASE_URL ||
   import.meta.env.SUPABASE_URL ||
@@ -15,23 +13,30 @@ const supabaseAnonKey =
   '';
 
 export const isSupabaseConfigured = Boolean(
-  supabaseUrl &&
-  supabaseAnonKey &&
-  supabaseUrl.startsWith('http') &&
+  typeof supabaseUrl === 'string' &&
+  typeof supabaseAnonKey === 'string' &&
+  supabaseUrl.trim().startsWith('http') &&
+  supabaseAnonKey.trim().length > 10 &&
   !supabaseUrl.includes('placeholder')
 );
 
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-      },
-    })
-  : null;
+let client = null;
 
 if (isSupabaseConfigured) {
-  console.log('⚡ Supabase client initialized with endpoint:', supabaseUrl);
+  try {
+    client = createClient(supabaseUrl.trim(), supabaseAnonKey.trim(), {
+      auth: {
+        persistSession: typeof window !== 'undefined',
+        autoRefreshToken: typeof window !== 'undefined',
+      },
+    });
+    console.log('⚡ Supabase client initialized with endpoint:', supabaseUrl);
+  } catch (err) {
+    console.warn('Could not initialize Supabase client:', err);
+    client = null;
+  }
 } else {
   console.log('ℹ️ Supabase not configured in client environment. Using hybrid/local fallback.');
 }
+
+export const supabase = client;
