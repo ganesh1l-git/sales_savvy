@@ -32,7 +32,10 @@ export const CheckoutPage = () => {
       // 1. Create Razorpay Payment order via backend
       const paymentOrder = await paymentService.createPaymentOrder({
         shippingOption,
-        shippingAddress: shippingAddress.trim()
+        shippingAddress: shippingAddress.trim(),
+        amount: grandTotal,
+        customerName: user?.username || 'Customer',
+        customerEmail: user?.email || 'customer@sales-savvy.com'
       });
 
       // 2. Open Razorpay Checkout or fallback test mode
@@ -82,6 +85,9 @@ export const CheckoutPage = () => {
             razorpayOrderId: paymentOrder.razorpayOrderId,
             razorpayPaymentId: 'pay_mock_' + Date.now(),
             razorpaySignature: 'mock_signature',
+            amount: grandTotal,
+            shippingOption,
+            shippingAddress: shippingAddress.trim(),
           });
           await refreshCart();
           navigate(`/payment-success?orderId=${paymentOrder.orderId}&paymentId=pay_mock_${Date.now()}`);
@@ -100,6 +106,9 @@ export const CheckoutPage = () => {
           razorpayOrderId: paymentOrder.razorpayOrderId,
           razorpayPaymentId: 'pay_simulated_' + Date.now(),
           razorpaySignature: 'mock_signature',
+          amount: grandTotal,
+          shippingOption,
+          shippingAddress: shippingAddress.trim(),
         });
         await refreshCart();
         navigate(`/payment-success?orderId=${paymentOrder.orderId}&paymentId=pay_simulated_${Date.now()}`);
