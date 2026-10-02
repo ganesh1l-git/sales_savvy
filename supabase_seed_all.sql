@@ -1,109 +1,4 @@
--- =============================================================================
--- SALES SAVVY - COMPLETE SUPABASE SETUP SCRIPT (SCHEMA + FULL 1,074 PRODUCTS + RLS)
--- Auto-generated from local MySQL SMB inventory dataset
---
--- How to run:
--- 1. Open Supabase Dashboard -> SQL Editor (https://supabase.com/dashboard/project/_/sql)
--- 2. Paste this entire script and click "Run" (or Ctrl + Enter)
--- =============================================================================
-
--- Enable required extensions
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- 1. DROP EXISTING TABLES IF ANY (Clean Slate)
-DROP TABLE IF EXISTS order_items CASCADE;
-DROP TABLE IF EXISTS orders CASCADE;
-DROP TABLE IF EXISTS cart_items CASCADE;
-DROP TABLE IF EXISTS product_images CASCADE;
-DROP TABLE IF EXISTS products CASCADE;
-DROP TABLE IF EXISTS categories CASCADE;
-
--- 2. CREATE TABLES
-CREATE TABLE categories (
-    category_id BIGSERIAL PRIMARY KEY,
-    category_name VARCHAR(100) NOT NULL UNIQUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE TABLE products (
-    product_id BIGSERIAL PRIMARY KEY,
-    product_name VARCHAR(255) NOT NULL,
-    description TEXT,
-    price NUMERIC(12, 2) NOT NULL,
-    stock_quantity INTEGER NOT NULL DEFAULT 0,
-    sub_category VARCHAR(100),
-    category_id BIGINT REFERENCES categories(category_id) ON DELETE SET NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE TABLE product_images (
-    image_id BIGSERIAL PRIMARY KEY,
-    product_id BIGINT REFERENCES products(product_id) ON DELETE CASCADE,
-    image_url TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE TABLE cart_items (
-    cart_item_id BIGSERIAL PRIMARY KEY,
-    user_id UUID DEFAULT auth.uid(),
-    product_id BIGINT REFERENCES products(product_id) ON DELETE CASCADE,
-    quantity INTEGER NOT NULL DEFAULT 1,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE TABLE orders (
-    order_id BIGSERIAL PRIMARY KEY,
-    user_id UUID DEFAULT auth.uid(),
-    total_amount NUMERIC(12, 2) NOT NULL,
-    shipping_amount NUMERIC(12, 2) DEFAULT 0.00,
-    status VARCHAR(50) DEFAULT 'PENDING',
-    payment_method VARCHAR(50) DEFAULT 'RAZORPAY',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE TABLE order_items (
-    order_item_id BIGSERIAL PRIMARY KEY,
-    order_id BIGINT REFERENCES orders(order_id) ON DELETE CASCADE,
-    product_id BIGINT REFERENCES products(product_id) ON DELETE SET NULL,
-    product_name VARCHAR(255) NOT NULL,
-    quantity INTEGER NOT NULL,
-    price NUMERIC(12, 2) NOT NULL
-);
-
--- 3. INDEXES FOR PERFORMANCE
-CREATE INDEX IF NOT EXISTS idx_products_category_id ON products(category_id);
-CREATE INDEX IF NOT EXISTS idx_products_sub_category ON products(sub_category);
-CREATE INDEX IF NOT EXISTS idx_product_images_product_id ON product_images(product_id);
-CREATE INDEX IF NOT EXISTS idx_cart_items_user_id ON cart_items(user_id);
-CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
-CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
-
--- 4. GRANT PERMISSIONS TO POSTGREST ROLES
-GRANT USAGE ON SCHEMA public TO anon, authenticated;
-GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated;
-
--- 5. ENABLE ROW LEVEL SECURITY (RLS)
-ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE product_images ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cart_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
-ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
-
--- 6. RLS POLICIES
-CREATE POLICY "Public categories viewable by everyone" ON categories FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "Public products viewable by everyone" ON products FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "Public product images viewable by everyone" ON product_images FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "Cart items manage" ON cart_items FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Orders viewable" ON orders FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "Orders insertable" ON orders FOR INSERT TO anon, authenticated WITH CHECK (true);
-CREATE POLICY "Order items viewable" ON order_items FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "Order items insertable" ON order_items FOR INSERT TO anon, authenticated WITH CHECK (true);
-
--- 7. SEED ALL 17 CATEGORIES
+-- SALES SAVVY - PRODUCTS & CATEGORIES DATA ONLY
 INSERT INTO categories (category_id, category_name) VALUES
     (1, 'Electronics'),
     (2, 'Fashion & Apparel'),
@@ -124,7 +19,6 @@ INSERT INTO categories (category_id, category_name) VALUES
     (17, '2 Wheelers')
 ON CONFLICT (category_id) DO UPDATE SET category_name = EXCLUDED.category_name;
 
--- 8. SEED ALL 1074 PRODUCTS
 INSERT INTO products (product_id, product_name, description, price, stock_quantity, sub_category, category_id) VALUES
     (1, 'SavvySound Pro ANC Headphones', 'Over-ear wireless headphones with active noise cancellation, 40-hour battery life, and high-fidelity 40mm dynamic drivers.', 3499.00, 33, NULL, 1),
     (2, 'PulseFit Titan Smartwatch', '1.96-inch AMOLED display, all-day heart rate & SpO2 monitoring, IP68 water resistance, and 100+ fitness modes.', 2299.00, 50, NULL, 1),
@@ -1208,7 +1102,6 @@ ON CONFLICT (product_id) DO UPDATE SET
     sub_category = EXCLUDED.sub_category,
     category_id = EXCLUDED.category_id;
 
--- 9. SEED ALL 1077 PRODUCT IMAGES
 INSERT INTO product_images (product_id, image_url) VALUES
     (1, 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=80'),
     (1, 'https://images.unsplash.com/photo-1484704849700-f032a568e944?w=800&auto=format&fit=crop&q=80'),
@@ -2286,9 +2179,9 @@ INSERT INTO product_images (product_id, image_url) VALUES
     (1072, 'http://rukmini1.flixcart.com/image/600/600/xif0q/bike-mobile-holder/u/y/3/polyester-handlebar-universal-mobile-holder-898-14-darkview-25-original-imahjchxvpgt9s84.jpeg?q=80'),
     (1073, 'http://rukmini1.flixcart.com/image/600/600/xif0q/bike-mobile-holder/8/k/z/waterproof-bike-mobile-holder-rain-cover-quick-mount-adjustable-original-imahpzv68cwv6vjt.jpeg?q=80'),
     (1074, 'http://rukmini1.flixcart.com/image/600/600/xif0q/bike-mobile-holder/a/a/s/polyester-handlebar-universal-mobile-holder-914-14-darkview-25-original-imahjchxnsvezgqx.jpeg?q=80'),
-    (1075, 'http://rukmini1.flixcart.com/image/600/600/xif0q/bike-mobile-holder/4/1/g/tmh-2-12-texum-20-original-imah5pzwcg4nnqbq.jpeg?q=80');
+    (1075, 'http://rukmini1.flixcart.com/image/600/600/xif0q/bike-mobile-holder/4/1/g/tmh-2-12-texum-20-original-imah5pzwcg4nnqbq.jpeg?q=80')
+ON CONFLICT DO NOTHING;
 
--- 10. RESET POSTGRES AUTO-INCREMENT SEQUENCES
 SELECT setval('categories_category_id_seq', COALESCE((SELECT MAX(category_id) FROM categories), 1));
 SELECT setval('products_product_id_seq', COALESCE((SELECT MAX(product_id) FROM products), 1));
 SELECT setval('product_images_image_id_seq', COALESCE((SELECT MAX(image_id) FROM product_images), 1));
