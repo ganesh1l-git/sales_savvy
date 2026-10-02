@@ -8,7 +8,6 @@ import com.sales.savvy.entity.ProductImage;
 import com.sales.savvy.exception.BadRequestException;
 import com.sales.savvy.exception.ResourceNotFoundException;
 import com.sales.savvy.repository.CategoryRepository;
-import com.sales.savvy.repository.ProductImageRepository;
 import com.sales.savvy.repository.ProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,14 +22,11 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
-    private final ProductImageRepository productImageRepository;
 
     public ProductService(ProductRepository productRepository,
-                          CategoryRepository categoryRepository,
-                          ProductImageRepository productImageRepository) {
+                          CategoryRepository categoryRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
-        this.productImageRepository = productImageRepository;
     }
 
     @Transactional(readOnly = true)

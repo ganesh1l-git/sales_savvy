@@ -5,7 +5,6 @@ import com.sales.savvy.dto.AuthResponse;
 import com.sales.savvy.entity.JWTToken;
 import com.sales.savvy.entity.User;
 import com.sales.savvy.entity.UserStatus;
-import com.sales.savvy.exception.BadRequestException;
 import com.sales.savvy.exception.UnauthorizedException;
 import com.sales.savvy.repository.JWTTokenRepository;
 import com.sales.savvy.repository.UserRepository;

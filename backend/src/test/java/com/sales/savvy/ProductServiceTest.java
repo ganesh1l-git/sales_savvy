@@ -5,7 +5,6 @@ import com.sales.savvy.dto.ProductResponse;
 import com.sales.savvy.entity.Category;
 import com.sales.savvy.entity.Product;
 import com.sales.savvy.repository.CategoryRepository;
-import com.sales.savvy.repository.ProductImageRepository;
 import com.sales.savvy.repository.ProductRepository;
 import com.sales.savvy.service.ProductService;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,14 +30,11 @@ class ProductServiceTest {
     @Mock
     private CategoryRepository categoryRepository;
 
-    @Mock
-    private ProductImageRepository productImageRepository;
-
     private ProductService productService;
 
     @BeforeEach
     void setUp() {
-        productService = new ProductService(productRepository, categoryRepository, productImageRepository);
+        productService = new ProductService(productRepository, categoryRepository);
     }
 
     @Test
