@@ -82,23 +82,33 @@ export const ProductDetailsPage = () => {
     );
   }
 
+  const displayName = product.name || product.productName || `Product #${product.productId || ''}`;
+  const displayCategory = product.categoryName || product.category?.categoryName || 'General';
+  const displaySubCategory = product.subCategory || product.sub_category || '';
+  const displayStock = product.stock !== undefined
+    ? Number(product.stock)
+    : (product.stockQuantity !== undefined ? Number(product.stockQuantity) : 10);
+  const isOutOfStock = displayStock <= 0;
+
   // Extract or detect Brand from title
-  const titleWords = product.name.split(' ');
+  const titleWords = displayName.split(' ');
   const detectedBrand = titleWords[0] || 'Official Brand';
 
   // Generate thumbnail set (Images 2 & 3 show multiple views + video box + '+11' badge)
-  const baseImg = (product.imageUrls && product.imageUrls.length > 0)
-    ? product.imageUrls[0]
-    : 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&auto=format&fit=crop&q=80';
+  const baseImg = (product.imageUrls && product.imageUrls.length > 0 && product.imageUrls[0])
+    || (product.images && product.images.length > 0 && (product.images[0].imageUrl || product.images[0]))
+    || product.imageUrl
+    || 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&auto=format&fit=crop&q=80';
 
-  const galleryImages = product.imageUrls && product.imageUrls.length > 1
-    ? product.imageUrls
-    : [
-        baseImg,
-        baseImg,
-        baseImg,
-        baseImg,
-      ];
+  let galleryImages = [];
+  if (Array.isArray(product.imageUrls) && product.imageUrls.length > 0) {
+    galleryImages = product.imageUrls.filter(Boolean);
+  } else if (Array.isArray(product.images) && product.images.length > 0) {
+    galleryImages = product.images.map((img) => (typeof img === 'string' ? img : img.imageUrl || img.image_url)).filter(Boolean);
+  }
+  if (galleryImages.length === 0) {
+    galleryImages = [baseImg, baseImg, baseImg, baseImg];
+  }
 
   const handleShare = () => {
     if (navigator.clipboard) {
@@ -140,16 +150,15 @@ export const ProductDetailsPage = () => {
     }
   };
 
-  const isOutOfStock = product.stock <= 0;
   const numPrice = Number(product.price) || 0;
   const emiMonth = Math.round(numPrice / 24);
 
   // Variant sizes based on category
-  const isFashion = product.categoryName === 'Fashion';
+  const isFashion = displayCategory === 'Fashion';
   const sizeOptions = isFashion ? ['S', 'M', 'L', 'XL'] : ['4GB + 128GB', '6GB + 128GB', '8GB + 256GB'];
 
   // Tech Specs Mapping based on Image 3
-  const isMobileOrElectronics = product.categoryName === 'Mobiles' || product.categoryName === 'Electronics';
+  const isMobileOrElectronics = displayCategory === 'Mobiles' || displayCategory === 'Electronics';
   const techSpecs = isMobileOrElectronics ? [
     { label: 'Brand', value: detectedBrand },
     { label: 'Operating System', value: detectedBrand === 'Apple' ? 'iOS 17 / iPadOS' : 'Android 15.0 (6 Gen OS Upgrades)' },
@@ -158,8 +167,8 @@ export const ProductDetailsPage = () => {
     { label: 'CPU Speed', value: '2.4 GHz' },
   ] : [
     { label: 'Brand', value: detectedBrand },
-    { label: 'Category', value: product.categoryName },
-    { label: 'Subcategory', value: product.subCategory || 'Standard Edition' },
+    { label: 'Category', value: displayCategory },
+    { label: 'Subcategory', value: displaySubCategory || 'Standard Edition' },
     { label: 'Material / Build', value: isFashion ? '100% Breathable Fine Cotton Blend' : 'Commercial Grade Certified' },
     { label: 'Warranty Summary', value: '1 Year Brand Manufacturer Warranty' },
   ];
@@ -190,16 +199,16 @@ export const ProductDetailsPage = () => {
           <Link to="/" style={{ color: '#007185', textDecoration: 'none' }}>Home</Link>
           <ChevronRight size={12} color="#888" />
           <Link to="/products" style={{ color: '#007185', textDecoration: 'none' }}>Catalog</Link>
-          {product.categoryName && (
+          {displayCategory && (
             <>
               <ChevronRight size={12} color="#888" />
-              <span style={{ color: '#007185' }}>{product.categoryName}</span>
+              <span style={{ color: '#007185' }}>{displayCategory}</span>
             </>
           )}
-          {product.subCategory && (
+          {displaySubCategory && (
             <>
               <ChevronRight size={12} color="#888" />
-              <span style={{ color: '#565959', fontWeight: 600 }}>{product.subCategory}</span>
+              <span style={{ color: '#565959', fontWeight: 600 }}>{displaySubCategory}</span>
             </>
           )}
         </div>
@@ -385,7 +394,7 @@ export const ProductDetailsPage = () => {
               }}>
                 <img
                   src={selectedImage || baseImg}
-                  alt={product.name}
+                  alt={displayName}
                   style={{
                     maxWidth: '100%',
                     maxHeight: '100%',
@@ -425,7 +434,7 @@ export const ProductDetailsPage = () => {
               margin: '0 0 6px 0',
               letterSpacing: '-0.3px'
             }}>
-              {product.name}
+              {displayName}
             </h1>
 
             {/* Brand Store Link */}

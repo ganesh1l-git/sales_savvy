@@ -75,25 +75,31 @@ export const CartPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {cart.items.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                        <img
-                          src={item.imageUrl || 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80'}
-                          alt={item.productName}
-                          style={{ width: '56px', height: '56px', borderRadius: 'var(--radius-md)', objectFit: 'cover' }}
-                        />
-                        <div>
-                          <Link to={`/products/${item.productId}`} style={{ fontWeight: 700, color: 'var(--text-main)' }}>
-                            {item.productName}
-                          </Link>
-                          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                            Available: {item.availableStock}
+                {cart.items.map((item) => {
+                  const pId = item.productId || item.product?.productId;
+                  const pName = item.productName || item.product?.productName || item.product?.name || `Product #${pId || ''}`;
+                  const pImg = item.imageUrl || item.product?.imageUrls?.[0] || item.product?.images?.[0]?.imageUrl || item.product?.imageUrl || 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80';
+                  const pStock = item.availableStock !== undefined ? item.availableStock : (item.product?.stock !== undefined ? item.product?.stock : (item.product?.stockQuantity !== undefined ? item.product?.stockQuantity : 10));
+
+                  return (
+                    <tr key={item.id || item.cartItemId}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                          <img
+                            src={pImg}
+                            alt={pName}
+                            style={{ width: '56px', height: '56px', borderRadius: 'var(--radius-md)', objectFit: 'cover' }}
+                          />
+                          <div>
+                            <Link to={`/products/${pId}`} style={{ fontWeight: 700, color: 'var(--text-main)' }}>
+                              {pName}
+                            </Link>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                              Available: {pStock}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
                     <td style={{ fontWeight: 600 }}>
                       ₹{Number(item.price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
@@ -140,7 +146,8 @@ export const CartPage = () => {
                       </button>
                     </td>
                   </tr>
-                ))}
+                );
+              })}
               </tbody>
             </table>
           </div>

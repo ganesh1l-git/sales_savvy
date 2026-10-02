@@ -62,14 +62,23 @@ export const AdminProductsPage = () => {
 
   const handleOpenEdit = (p) => {
     setEditingId(p.productId);
+    const pName = p.name || p.productName || '';
+    const pCatId = p.categoryId || p.category?.categoryId || '';
+    const pStock = p.stock !== undefined ? p.stock : (p.stockQuantity !== undefined ? p.stockQuantity : 0);
+    const pImages = (Array.isArray(p.imageUrls) && p.imageUrls.length > 0)
+      ? p.imageUrls
+      : (Array.isArray(p.images) && p.images.length > 0)
+        ? p.images.map((img) => (typeof img === 'string' ? img : img.imageUrl || img.image_url)).filter(Boolean)
+        : [''];
+
     setFormData({
-      name: p.name,
+      name: pName,
       description: p.description || '',
       subCategory: p.subCategory || '',
       price: p.price,
-      stock: p.stock,
-      categoryId: p.categoryId,
-      imageUrls: p.imageUrls && p.imageUrls.length > 0 ? p.imageUrls : ['']
+      stock: pStock,
+      categoryId: pCatId,
+      imageUrls: pImages.length > 0 ? pImages : ['']
     });
     setActionError('');
     setIsModalOpen(true);
@@ -203,66 +212,74 @@ export const AdminProductsPage = () => {
                       </td>
                     </tr>
                   ) : (
-                    filteredProducts.map((p) => (
-                      <tr key={p.productId}>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <img
-                              src={p.imageUrls?.[0] || 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80'}
-                              alt=""
-                              style={{ width: '48px', height: '48px', borderRadius: 'var(--radius-sm)', objectFit: 'cover' }}
-                            />
-                            <div>
-                              <div style={{ fontWeight: 700 }}>{p.name}</div>
-                              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>ID: #{p.productId}</div>
+                    filteredProducts.map((p) => {
+                      const pName = p.name || p.productName || `Product #${p.productId}`;
+                      const pCatName = p.categoryName || p.category?.categoryName || 'General';
+                      const pStock = p.stock !== undefined ? p.stock : (p.stockQuantity !== undefined ? p.stockQuantity : 0);
+                      const pImg = p.imageUrls?.[0] || p.images?.[0]?.imageUrl || p.imageUrl || 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80';
+                      const pImgCount = p.imageUrls?.length || p.images?.length || (p.imageUrl ? 1 : 0);
+
+                      return (
+                        <tr key={p.productId}>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <img
+                                src={pImg}
+                                alt={pName}
+                                style={{ width: '48px', height: '48px', borderRadius: 'var(--radius-sm)', objectFit: 'cover' }}
+                              />
+                              <div>
+                                <div style={{ fontWeight: 700 }}>{pName}</div>
+                                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>ID: #{p.productId}</div>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
-                            <span className="badge" style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>
-                              {p.categoryName || 'General'}
-                            </span>
-                            {p.subCategory && (
-                              <span style={{ fontSize: '0.72rem', background: '#fef3c7', color: '#b45309', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
-                                {p.subCategory}
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
+                              <span className="badge" style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>
+                                {pCatName}
                               </span>
-                            )}
-                          </div>
-                        </td>
-                        <td style={{ fontWeight: 800 }}>
-                          ₹{Number(p.price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                        </td>
-                        <td>
-                          <span className={`product-stock ${p.stock <= 0 ? 'stock-out' : 'stock-in'}`}>
-                            {p.stock} units
-                          </span>
-                        </td>
-                        <td>
-                          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                            {p.imageUrls?.length || 0} image(s)
-                          </span>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            <button
-                              onClick={() => handleOpenEdit(p)}
-                              className="btn btn-secondary btn-sm"
-                              title="Edit Product"
-                            >
-                              <Edit3 size={14} /> Edit
-                            </button>
-                            <button
-                              onClick={() => handleDelete(p.productId, p.name)}
-                              className="btn btn-danger btn-sm"
-                              title="Delete Product"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                              {p.subCategory && (
+                                <span style={{ fontSize: '0.72rem', background: '#fef3c7', color: '#b45309', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                                  {p.subCategory}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td style={{ fontWeight: 800 }}>
+                            ₹{Number(p.price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </td>
+                          <td>
+                            <span className={`product-stock ${pStock <= 0 ? 'stock-out' : 'stock-in'}`}>
+                              {pStock} units
+                            </span>
+                          </td>
+                          <td>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                              {pImgCount} image(s)
+                            </span>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button
+                                onClick={() => handleOpenEdit(p)}
+                                className="btn btn-secondary btn-sm"
+                                title="Edit Product"
+                              >
+                                <Edit3 size={14} /> Edit
+                              </button>
+                              <button
+                                onClick={() => handleDelete(p.productId, pName)}
+                                className="btn btn-danger btn-sm"
+                                title="Delete Product"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>

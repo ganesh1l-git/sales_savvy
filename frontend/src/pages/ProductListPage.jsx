@@ -66,12 +66,20 @@ export const ProductListPage = () => {
 
   // Client-side sorting and stock filtering
   const filteredProducts = products
-    .filter((p) => (!inStockOnly ? true : p.stock > 0))
+    .filter((p) => {
+      if (!inStockOnly) return true;
+      const stock = p.stock !== undefined ? p.stock : (p.stockQuantity !== undefined ? p.stockQuantity : 10);
+      return stock > 0;
+    })
     .sort((a, b) => {
       if (sortBy === 'price-low') return Number(a.price) - Number(b.price);
       if (sortBy === 'price-high') return Number(b.price) - Number(a.price);
-      if (sortBy === 'name') return a.name.localeCompare(b.name);
-      return b.productId - a.productId;
+      if (sortBy === 'name') {
+        const nameA = a.name || a.productName || '';
+        const nameB = b.name || b.productName || '';
+        return nameA.localeCompare(nameB);
+      }
+      return (Number(b.productId) || 0) - (Number(a.productId) || 0);
     });
 
   return (

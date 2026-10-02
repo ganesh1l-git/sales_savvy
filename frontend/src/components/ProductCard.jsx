@@ -11,11 +11,17 @@ export const ProductCard = ({ product }) => {
   const [added, setAdded] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const imageUrl = product.imageUrls && product.imageUrls.length > 0
-    ? product.imageUrls[0]
-    : 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80';
+  const displayName = product.name || product.productName || `Product #${product.productId || ''}`;
+  const displayCategory = product.categoryName || product.category?.categoryName || 'General';
+  const displayStock = product.stock !== undefined
+    ? Number(product.stock)
+    : (product.stockQuantity !== undefined ? Number(product.stockQuantity) : 10);
+  const isOutOfStock = displayStock <= 0;
 
-  const isOutOfStock = product.stock <= 0;
+  const imageUrl = (Array.isArray(product.imageUrls) && product.imageUrls.length > 0 && product.imageUrls[0])
+    || (Array.isArray(product.images) && product.images.length > 0 && (product.images[0].imageUrl || product.images[0].image_url || (typeof product.images[0] === 'string' ? product.images[0] : null)))
+    || product.imageUrl
+    || 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80';
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
@@ -46,7 +52,7 @@ export const ProductCard = ({ product }) => {
         <div className="product-image-container">
           <img
             src={imageUrl}
-            alt={product.name}
+            alt={displayName}
             className="product-image"
             loading="lazy"
           />
@@ -56,7 +62,7 @@ export const ProductCard = ({ product }) => {
       <div className="product-card-body" style={{ padding: '14px' }}>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '6px' }}>
           <span className="product-category-tag" style={{ color: 'var(--primary)', fontSize: '0.72rem', fontWeight: 700 }}>
-            {product.categoryName || 'General'}
+            {displayCategory}
           </span>
           {product.subCategory && (
             <span style={{ fontSize: '0.7rem', background: '#f1f3f6', color: '#616161', padding: '1px 6px', borderRadius: '3px', fontWeight: 600 }}>
@@ -66,8 +72,8 @@ export const ProductCard = ({ product }) => {
         </div>
         
         <Link to={`/products/${product.productId}`}>
-          <h3 className="product-title" title={product.name} style={{ fontSize: '0.9rem', fontWeight: 600, color: '#212121', marginBottom: '6px', lineHeight: 1.3 }}>
-            {product.name}
+          <h3 className="product-title" title={displayName} style={{ fontSize: '0.9rem', fontWeight: 600, color: '#212121', marginBottom: '6px', lineHeight: 1.3 }}>
+            {displayName}
           </h3>
         </Link>
 

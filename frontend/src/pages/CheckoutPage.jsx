@@ -238,24 +238,30 @@ export const CheckoutPage = () => {
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px', maxHeight: '280px', overflowY: 'auto' }}>
-            {cart.items.map((item) => (
-              <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <img
-                    src={item.imageUrl || 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80'}
-                    alt=""
-                    style={{ width: '44px', height: '44px', borderRadius: 'var(--radius-sm)', objectFit: 'cover' }}
-                  />
-                  <div>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>{item.productName}</div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Qty: {item.quantity}</div>
+            {cart.items.map((item) => {
+              const pName = item.productName || item.product?.productName || item.product?.name || 'Product';
+              const pImg = item.imageUrl || item.product?.imageUrls?.[0] || item.product?.images?.[0]?.imageUrl || item.product?.imageUrl || 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80';
+              const itemTotal = Number(item.subtotal || item.itemTotal || (item.price * item.quantity) || 0);
+
+              return (
+                <div key={item.id || item.cartItemId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <img
+                      src={pImg}
+                      alt={pName}
+                      style={{ width: '44px', height: '44px', borderRadius: 'var(--radius-sm)', objectFit: 'cover' }}
+                    />
+                    <div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>{pName}</div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Qty: {item.quantity}</div>
+                    </div>
+                  </div>
+                  <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>
+                    ₹{itemTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </div>
                 </div>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>
-                  ₹{Number(item.subtotal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>

@@ -51,4 +51,38 @@ describe('ProductCard Component', () => {
     const btn = screen.getByRole('button');
     expect(btn.hasAttribute('disabled')).toBe(true);
   });
+
+  it('renders correctly with Supabase-shaped product (productName, category object, images array)', () => {
+    const supabaseProduct = {
+      productId: 22,
+      productName: 'Biba Women Cotton Straight Printed Kurta Set with Palazzo & Dupatta',
+      description: 'Pure cotton ethnic kurta set',
+      price: 2499.00,
+      stockQuantity: 40,
+      subCategory: 'Kurta sets',
+      category: {
+        categoryId: 1,
+        categoryName: 'Fashion'
+      },
+      images: [{ imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800' }]
+    };
+
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <CartProvider>
+            <ProductCard product={supabaseProduct} />
+          </CartProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    );
+
+    expect(screen.getByText('Biba Women Cotton Straight Printed Kurta Set with Palazzo & Dupatta')).toBeDefined();
+    expect(screen.getByText('Fashion')).toBeDefined();
+    expect(screen.getByText('Kurta sets')).toBeDefined();
+    expect(screen.getByText('In Stock')).toBeDefined();
+    expect(screen.getByText(/2,499/)).toBeDefined();
+    const img = screen.getByRole('img');
+    expect(img.getAttribute('src')).toBe('https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800');
+  });
 });
