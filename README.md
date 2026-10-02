@@ -7,6 +7,7 @@ Sales Savvy is a production-ready, full-stack e-commerce platform specifically d
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+- [Key Catalog & UI/UX Features](#key-catalog--uiux-features)
 - [The Six Core Functional Services](#the-six-core-functional-services)
 - [Technology Stack](#technology-stack)
 - [Architecture & Layering](#architecture--layering)
@@ -20,6 +21,7 @@ Sales Savvy is a production-ready, full-stack e-commerce platform specifically d
 - [Docker & Containerized Deployment](#docker--containerized-deployment)
 - [Automated Testing](#automated-testing)
 - [Known Limitations](#known-limitations)
+- [Repository & Links](#repository--links)
 
 ---
 
@@ -30,6 +32,22 @@ Sales Savvy focuses on practical, performant, and secure SMB retail needs withou
 - **Strict Role-Based Access Control (RBAC)**: Distinct `CUSTOMER` and `ADMIN` roles enforced server-side via Spring Security 6.
 - **Secure Credential Handling**: BCrypt password hashing, HttpOnly cookies protecting JWT tokens from XSS, and zero exposure of sensitive secrets in responses.
 - **Authoritative Server-Side Logic**: Product availability, pricing, shipping tiers, order subtotals, and Razorpay HMAC-SHA256 signature verification calculated exclusively on the backend.
+
+---
+
+## Key Catalog & UI/UX Features
+
+- **Massive 1,074+ Authentic Product Catalog**: Spans 13 categories and 47 dedicated subcategories with real specifications, prices, stock levels, and multi-angle product photography.
+- **Clean, Light E-Commerce Aesthetics (Flipkart / Amazon Style)**: Clean off-white background (`#f1f3f6`), Flipkart Blue branding (`#2874f0`), amber/orange CTA buttons (`#ff9f00` / `#fb641b`), green rating pills (`4.2 ★`), and strikethrough MRP discounts.
+- **Interactive Flipkart-Style Subcategory Strip**: Horizontal subcategory slider with rounded cream cards, bottom yellow accent bars, and `TOP 50 DEALS` badges.
+- **Full-Featured Product Details Page**:
+  - Vertical multi-angle image thumbnail strip with photo/video counts (`5 VIDEOS`, `11+`).
+  - Uncropped, centered product canvas with "Click to see full view" and share action.
+  - 4 Interactive Offer Cards (Cashback, No Cost EMI, Bank Discounts, Partner Offers).
+  - 7 Trust & Service Guarantee Badges (Replacement, Free Delivery, Warranty, Pay on Delivery, Top Brand).
+  - Size pills, Color swatches, and technical specification breakdown table.
+- **Comprehensive Account Management Dropdown**:
+  - Direct access to My Profile, Orders, Coupons, SuperCoins balance, Flipkart Plus Zone, Saved Cards & Wallet, Saved Addresses, Wishlist, Gift Cards, and Notifications.
 
 ---
 
@@ -95,8 +113,7 @@ Sales Savvy is structured into six functional domain services:
 - **UI Library**: React 18
 - **Routing**: React Router DOM 6
 - **HTTP Client**: Axios (configured with `withCredentials: true`)
-- **Icons**: Lucide React
-- **Design System**: Custom Modern CSS with Plus Jakarta Sans typography, glassmorphism, responsive grids, and micro-interactions
+- **Design System**: Clean, Light E-Commerce CSS (Flipkart & Amazon inspired) featuring Flipkart Blue accents, amber/yellow Add-to-Cart buttons, responsive product grids, and uncropped image containers
 
 ---
 
@@ -519,5 +536,11 @@ Tests cover:
 1. **Single Currency Focus**: Currently locked to Indian Rupee (INR ₹) in alignment with core SMB requirements.
 2. **Payment Gateway**: Primary integration is configured with Razorpay. Simulated gateway test signatures are supported in development mode for offline and staging tests without live network credentials.
 3. **Product Image Storage**: Product images are hosted via validated external HTTPS image URLs (e.g. Unsplash CDN, Cloud Storage). Direct binary multipart file upload to local disk or S3 can be enabled if required.
-#   s a l e s _ s a v v y  
- 
+
+---
+
+## Repository & Links
+
+- **GitHub Repository**: [https://github.com/ganesh1l-git/sales_savvy.git](https://github.com/ganesh1l-git/sales_savvy.git)
+- **Author**: Ganesh L ([@ganesh1l-git](https://github.com/ganesh1l-git))
+- **License**: MIT
